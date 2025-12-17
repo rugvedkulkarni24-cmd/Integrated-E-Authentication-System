@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8 text-center">
+    <div class="card-hero">
+      <h3>Face Verification</h3>
+      <p class="text-muted">Look at the camera — verification runs automatically.</p>
+
+      <div class="camera-box mb-3">
+        <video id="video" autoplay playsinline style="width:100%;max-width:720px;border-radius:8px;"></video>
+      </div>
+
+      <div id="vstatus">Status: <span id="vtext">Waiting...</span></div>
+      <div id="vmsg" class="text-success mt-2"></div>
+      <a class="btn btn-outline-secondary mt-3" href="{{ url_for('login') }}">Back</a>
+    </div>
+  </div>
+</div>
+
+<script>
+const userId = "{{ user_id }}";
+const video = document.getElementById('video');
+const vtext = document.getElementById('vtext');
+const vmsg = document.getElementById('vmsg');
+
+async function startVerify(){
+  try{
+    const stream = await navigator.mediaDevices.getUserMedia({video:true, audio:false});
+    video.srcObject = stream; await video.play();
+  }catch(e){
+    alert("Camera not available: " + e);
+    return;
+  }
+
+  let attempts = 0;
+  const maxAttempts = 60;
+  while(attempts < maxAttempts){
+    attempts++;
+    vtext.innerText = `Trying... (${attempts})`;
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video,0,0,canvas.width,canvas.height);
+    const data = canvas.toDataURL('image/jpeg', 0.7);
+
+    try{
+      const res = await fetch(`/api/verify_face/${userId}`, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ image: data })
+      });
+      const j = await res.json();
+      if (j.recognized){
+        vtext.innerText = "Verified!";
+        vmsg.innerText = "User successfully verified — Redirecting to dashboard...";
+        setTimeout(()=> location.href = "{{ url_for('dashboard') }}", 1000);
+        return;
+      } else {
+        if (j.reason === 'no_model') { vtext.innerText = 'No trained model. Register first.'; break; }
+        if (j.reason === 'no_face') { vtext.innerText = 'No face detected. Adjust lighting.'; }
+        else { vtext.innerText = 'Not matched. Keep still.'; }
+      }
+    }catch(e){
+      console.error(e);
+      vtext.innerText = "Network error";
+    }
+
+    await new Promise(r=>setTimeout(r, 350));
+  }
+  vtext.innerText = "Verification failed. Try again.";
+}
+
+startVerify();
+</script>
+{% endblock %}

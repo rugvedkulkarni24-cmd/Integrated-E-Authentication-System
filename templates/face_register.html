@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8 text-center">
+    <div class="card-hero">
+      <h3>Face Registration</h3>
+      <p class="text-muted">Auto-capturing 12 clear face images. Keep your face centered and still for a few seconds.</p>
+
+      <div class="camera-box mb-3">
+        <video id="video" autoplay playsinline style="width:100%;max-width:720px;border-radius:8px;"></video>
+      </div>
+
+      <div class="mb-2">Captured: <span id="count">0</span>/12</div>
+      <div id="msg" class="text-success mb-2"></div>
+      <a class="btn btn-outline-secondary" href="{{ url_for('index') }}">Cancel</a>
+    </div>
+  </div>
+</div>
+
+<script>
+const userId = "{{ user_id }}";
+const video = document.getElementById('video');
+const countEl = document.getElementById('count');
+const msg = document.getElementById('msg');
+
+async function start() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({video:true, audio:false});
+    video.srcObject = stream;
+    await video.play();
+    autoCapture();
+  } catch (e) {
+    alert("Camera error: " + e);
+  }
+}
+
+let captured = 0;
+let running = true;
+
+function captureToDataURL() {
+  const canvas = document.createElement('canvas');
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(video,0,0,canvas.width,canvas.height);
+  return canvas.toDataURL('image/jpeg', 0.7);
+}
+
+async function autoCapture() {
+  while(running && captured < 12) {
+    const data = captureToDataURL();
+    try {
+      const res = await fetch(`/api/capture_face/${userId}`, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ image: data })
+      });
+      const j = await res.json();
+      if (j.total) captured = j.total;
+      countEl.innerText = captured;
+      if (j.done) {
+        running = false;
+        msg.innerText = "Captured & trained successfully. Redirecting to login...";
+        setTimeout(()=> window.location.href = "{{ url_for('login') }}", 1800);
+        break;
+      }
+    } catch(e) {
+      console.error(e);
+    }
+    await new Promise(r=>setTimeout(r, 500));
+  }
+}
+
+start();
+</script>
+{% endblock %}

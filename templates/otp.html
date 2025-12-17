@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="row justify-content-center">
+  <div class="col-md-6 text-center">
+    <div class="card card-hero p-4 shadow-lg" style="border-radius: 18px;">
+      
+      <h2 class="mb-2 fw-bold"> OTP Verification</h2>
+      <p class="text-muted">Enter the 6-digit code sent to your email</p>
+
+      <form method="POST">
+
+        <!-- OTP input box -->
+        <input type="text" name="otp" maxlength="6" 
+          class="form-control text-center fs-3 fw-semibold my-3" 
+          style="letter-spacing: 6px; border-radius: 12px;" 
+          placeholder="••••••" required id="otpInput">
+
+        <!-- Submit OTP -->
+        <button name="submit_otp" type="submit" class="btn btn-success btn-lg w-100 mt-2" 
+          style="border-radius: 12px;">
+          Verify OTP ✔
+        </button>
+
+        <!-- Resend button -->
+        <button id="resendBtn" name="resend_otp" type="submit" 
+          class="btn btn-outline-primary mt-3 w-100" 
+          style="border-radius: 12px;" disabled>
+          Resend OTP 🔄
+        </button>
+
+        <!-- Timer -->
+        <p class="mt-2 text-muted" id="timerText">
+          Resend available in <b id="timer">60</b>s
+        </p>
+
+      </form>
+
+      <a href="{{ url_for('login') }}" class="text-decoration-none mt-4 d-block">
+        ⬅ Back to Login
+      </a>
+
+    </div>
+  </div>
+</div>
+
+<script>
+let time = 60;
+let timerDisplay = document.getElementById("timer");
+let resendButton = document.getElementById("resendBtn");
+let timerText = document.getElementById("timerText");
+
+document.getElementById("otpInput").focus();
+
+let countdown = setInterval(function() {
+  time--;
+  timerDisplay.textContent = time;
+
+  if (time <= 0) {
+    clearInterval(countdown);
+    resendButton.disabled = false;
+    timerText.textContent = "You can now resend OTP 👍";
+  }
+}, 1000);
+</script>
+
+{% endblock %}

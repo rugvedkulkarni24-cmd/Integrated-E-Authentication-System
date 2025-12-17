@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card-hero text-center">
+      <h1 class="display-5">E-Authentication System</h1>
+      <p class="lead text-muted">Secure login with Email + OTP and Face Recognition. Clean, fast and presentation-ready.</p>
+      <div class="mt-3">
+        <a class="btn btn-primary btn-lg me-2" href="{{ url_for('register') }}">Register</a>
+        <a class="btn btn-outline-primary btn-lg" href="{{ url_for('login') }}">Login</a>
+      </div>
+      <div class="mt-3 text-muted small">Admin? <a href="{{ url_for('admin_login') }}">Click here</a></div>
+    </div>
+  </div>
+</div>
+{% endblock %}
