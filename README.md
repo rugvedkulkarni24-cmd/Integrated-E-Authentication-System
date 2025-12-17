@@ -2,7 +2,7 @@
 
 A **secure multi-factor authentication web application** that combines **Email & Password**, **Email-based OTP (2FA)**, and **Biometric Face Recognition** to provide a strong and modern authentication solution.
 
-This project is developed as **Mini Project – I** for **B.E. Computer Engineering (DBATU University)** and focuses on real-world security challenges and practical implementation.
+This project is developed as **Mini Project – I** for **Third Year in B.tech Computer Engineering (DBATU University)** and focuses on real-world security challenges and practical implementation.
 
 ---
 
